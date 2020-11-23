@@ -6,6 +6,12 @@ Hacker News API: [https://github.com/HackerNews/API](https://github.com/HackerNe
 
 Expo Published Project Link : [https://expo.io/@grem848/projects/HackerNews](https://expo.io/@grem848/projects/HackerNews)
 
+## Info
+
+React Native: 0.63
+Expo SDK: 39
+
+
 ## Requirements
 
 - Expo CLI
