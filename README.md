@@ -8,8 +8,8 @@ Expo Published Project Link : [https://expo.io/@grem848/projects/HackerNews](htt
 
 ## Info
 
-React Native: 0.63
-Expo SDK: 39
+- React Native: 0.63
+- Expo SDK: 39
 
 
 ## Requirements
