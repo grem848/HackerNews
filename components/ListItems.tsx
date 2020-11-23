@@ -1,6 +1,6 @@
 import React, { FC } from "react";
-import { Text, StyleSheet } from "react-native";
-import { Card, ListItem } from "react-native-elements";
+import { Text, StyleSheet, Linking, View } from "react-native";
+import { Card, Button as ButtonElements, Icon } from "react-native-elements";
 import IStory from "../interfaces/IStory";
 import {
   StoryScore,
@@ -24,12 +24,26 @@ export const StoryListItem: FC<Props> = (props) => {
       <Card.Title>{props.story.title}</Card.Title>
       <Card.Divider />
       <Text style={styles.cardText}>{StoryAuthor + props.story.by}</Text>
-      <Text style={styles.cardText}>
-        {StoryAuthorKarma + props.story.authorKarma}
-      </Text>
-      <Text style={[styles.cardText, styles.marginBottom]}>
-        {props.story.url}
-      </Text>
+      {props.story.authorKarma && (
+        <Text style={styles.cardText}>
+          {StoryAuthorKarma + props.story.authorKarma}
+        </Text>
+      )}
+      {props.story.url && (
+        <View>
+          <Text
+            style={[styles.cardText, styles.marginBottom]}
+            onPress={() => Linking.openURL(props.story.url)}
+          >
+            {props.story.url}
+          </Text>
+          <ButtonElements
+            type="clear"
+            onPress={() => Linking.openURL(props.story.url)}
+            icon={<Icon name="open-in-browser" size={40} color="#2089DC" />}
+          />
+        </View>
+      )}
       <Card.Divider />
       <Text style={styles.cardText}>{StoryScore + props.story.score}</Text>
       <Text style={styles.cardText}>{time}</Text>
@@ -37,19 +51,13 @@ export const StoryListItem: FC<Props> = (props) => {
   );
 };
 
-export const LoadingListItem: FC = () => {
-  return (
-    <ListItem>
-      <ListItem.Content>
-        <ListItem.Title>{"Loading..."}</ListItem.Title>
-      </ListItem.Content>
-    </ListItem>
-  );
+export const LoadingIcon: FC = () => {
+  return <ButtonElements type="clear" title="Loading button" loading />;
 };
 
 const styles = StyleSheet.create({
   card: {
-    marginBottom: 12,
+    marginBottom: 20,
   },
   marginBottom: {
     paddingTop: 8,

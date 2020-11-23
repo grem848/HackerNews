@@ -1,30 +1,25 @@
 import React, { FC, useEffect, useState } from "react";
 import { FlatList, StyleSheet, Text, View } from "react-native";
+import { Divider } from "react-native-elements";
 import Header from "./components/Header";
-import { StoryListItem, LoadingListItem } from "./components/ListItems";
+import { StoryListItem, LoadingIcon } from "./components/ListItems";
 import { HackerNewsAPI, Title } from "./constants";
 import IStory from "./interfaces/IStory";
+import IUser from "./interfaces/IUser";
 import { fetchItem } from "./services/FetchService";
 import { getRandomItemsFromArray } from "./utils/utils";
 
 const App: FC = () => {
   const [topTenStories, setTopTenStories] = useState<IStory[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
   // componentdidmount
   useEffect(() => {
     getTopTenStoriesRandomized();
-
-    // fetchItem<IStory>(`${HackerNewsAPI}/user/20.json`)
-    //   .then((item) => {
-    //     console.log(item);
-    //   })
-    //   .catch((error) => {
-    //     /* show error message */
-    //     console.error(error);
-    //   });
   }, []);
 
   const getTopTenStoriesRandomized = async () => {
+    setLoading(true);
     // get the ids of 10 random topstories
     const randomizedIDs: void | number[] = await fetchItem<number[]>(
       `${HackerNewsAPI}/topstories.json`
@@ -43,11 +38,23 @@ const App: FC = () => {
 
       // loop through the ids and get their full stories and user info
       for (const storyID of randomizedIDs) {
-        const story = await getStory(storyID);
-        console.log(story);
-        if (story) topTenStoriesList.push(story);
+        const story: IStory = await getStory(storyID);
+        const user: IUser = await getUser(story.by);
+
+        // check if story is defined
+        if (story) {
+          // check if user is defined, and add id and karma to story
+          if (user) {
+            story.authorKarma = user.karma;
+          }
+          topTenStoriesList.push(story);
+        }
       }
+      // sort top ten stories ascending
+      topTenStoriesList.sort((a, b) => a.score - b.score);
+
       setTopTenStories(topTenStoriesList);
+      setLoading(false);
     }
   };
 
@@ -63,18 +70,29 @@ const App: FC = () => {
       });
   };
 
+  // get a user using the user id
+  const getUser = async (userID: string) => {
+    return fetchItem<IUser>(`${HackerNewsAPI}/user/${userID}.json`)
+      .then((item) => {
+        return item as IUser;
+      })
+      .catch((error) => {
+        /* show error message */
+        return Promise.reject(error);
+      });
+  };
+
   return (
-    // console.log("topTenStories", topTenStories),
     <View style={styles.container}>
-      <Header title={Title} />
-      {topTenStories.length > 0 ? (
+      <Header title={Title} reloadFunc={getTopTenStoriesRandomized} />
+      {loading ? (
+        <LoadingIcon />
+      ) : (
         <FlatList
           data={topTenStories}
           keyExtractor={(item, index) => item.title + index}
           renderItem={(story) => <StoryListItem story={story.item} />}
         />
-      ) : (
-        <LoadingListItem />
       )}
     </View>
   );
@@ -83,7 +101,7 @@ const App: FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 40,
+    backgroundColor: "lightgrey",
   },
 });
 
