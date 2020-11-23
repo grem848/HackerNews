@@ -1,38 +1,18 @@
-import { StatusBar } from "expo-status-bar";
 import React, { FC, useEffect, useState } from "react";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 import Header from "./components/Header";
-import { StoryListItem } from "./components/ListItems";
+import { StoryListItem, LoadingListItem } from "./components/ListItems";
 import { HackerNewsAPI, Title } from "./constants";
 import IStory from "./interfaces/IStory";
 import { fetchItem } from "./services/FetchService";
 import { getRandomItemsFromArray } from "./utils/utils";
 
 const App: FC = () => {
-  const [news, setNews] = useState([
-    { id: "1", news: "news1" },
-    { id: "2", news: "news2" },
-    { id: "3", news: "news3" },
-    { id: "4", news: "news4" },
-    { id: "5", news: "news5" },
-    { id: "6", news: "news6" },
-    { id: "7", news: "news7" },
-  ]);
-
   const [topTenStories, setTopTenStories] = useState<IStory[]>([]);
-  // const [topTenStoriesIDs, setTopTenStoriesIDs] = useState<number[]>([]);
 
   // componentdidmount
   useEffect(() => {
     getTopTenStoriesRandomized();
-    // fetchItem<IStory>(`${HackerNewsAPI}/item/8863.json`)
-    //   .then((item) => {
-    //     console.log(item);
-    //   })
-    //   .catch((error) => {
-    //     /* show error message */
-    //     console.error(error);
-    //   });
 
     // fetchItem<IStory>(`${HackerNewsAPI}/user/20.json`)
     //   .then((item) => {
@@ -44,40 +24,67 @@ const App: FC = () => {
     //   });
   }, []);
 
-  const getTopTenStoriesRandomized = () => {
-    let randomizedIDs: number[];
-
-    fetchItem<number[]>(`${HackerNewsAPI}/topstories.json`)
+  const getTopTenStoriesRandomized = async () => {
+    // get the ids of 10 random topstories
+    const randomizedIDs: void | number[] = await fetchItem<number[]>(
+      `${HackerNewsAPI}/topstories.json`
+    )
       .then((topTenStoriesIDsList) => {
-        randomizedIDs = getRandomItemsFromArray(topTenStoriesIDsList, 10);
+        return getRandomItemsFromArray(topTenStoriesIDsList, 10);
       })
-      // .finally(() => console.log("ToptenstoriesIDs", topTenStoriesIDs))
       .catch((error) => {
         /* show error message */
-        console.error(error);
+        return Promise.reject(error);
       });
 
-    // setTopTenStories();
+    // check if the randomizedIDs exists and isnt empty
+    if (randomizedIDs !== undefined && randomizedIDs.length > 0) {
+      let topTenStoriesList: IStory[] = [];
+
+      // loop through the ids and get their full stories and user info
+      for (const storyID of randomizedIDs) {
+        const story = await getStory(storyID);
+        console.log(story);
+        if (story) topTenStoriesList.push(story);
+      }
+      setTopTenStories(topTenStoriesList);
+    }
+  };
+
+  // get a story using the story id
+  const getStory = async (storyID: number) => {
+    return fetchItem<IStory>(`${HackerNewsAPI}/item/${storyID}.json`)
+      .then((item) => {
+        return item as IStory;
+      })
+      .catch((error) => {
+        /* show error message */
+        return Promise.reject(error);
+      });
   };
 
   return (
+    // console.log("topTenStories", topTenStories),
     <View style={styles.container}>
       <Header title={Title} />
-      <FlatList
-        data={topTenStories}
-        renderItem={(story) => <StoryListItem story={story} />}
-      />
+      {topTenStories.length > 0 ? (
+        <FlatList
+          data={topTenStories}
+          keyExtractor={(item, index) => item.title + index}
+          renderItem={(story) => <StoryListItem story={story.item} />}
+        />
+      ) : (
+        <LoadingListItem />
+      )}
     </View>
   );
 };
-
-export default App;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 40,
-    // alignItems: "center",
-    // justifyContent: "center",
   },
 });
+
+export default App;

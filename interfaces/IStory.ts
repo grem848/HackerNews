@@ -1,9 +1,9 @@
 interface IStory {
+  by: string;
   title: string;
   url: string;
   time: string;
   score: number;
-  authorID?: number;
   authorKarma?: number;
 }
 
