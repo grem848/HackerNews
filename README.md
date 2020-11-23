@@ -4,20 +4,12 @@ Made by Andreas Guldborg Heick
 
 Hacker News API: [https://github.com/HackerNews/API](https://github.com/HackerNews/API)
 
-<br>
-<hr>
-
 ## Requirements
 
 - Expo CLI
 - OPTIONAL: Expo APP (Android/iOS)
 
-<br>
-<hr>
-
 ## Setup
-
-<br>
 
 1. Run this in the project root folder to install all modules needed
 
