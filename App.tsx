@@ -2,8 +2,11 @@ import { StatusBar } from "expo-status-bar";
 import React, { FC, useEffect, useState } from "react";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 import Header from "./components/Header";
+import { StoryListItem } from "./components/ListItems";
 import { HackerNewsAPI, Title } from "./constants";
 import IStory from "./interfaces/IStory";
+import { fetchItem } from "./services/FetchService";
+import { getRandomItemsFromArray } from "./utils/utils";
 
 const App: FC = () => {
   const [news, setNews] = useState([
@@ -16,52 +19,53 @@ const App: FC = () => {
     { id: "7", news: "news7" },
   ]);
 
-  async function fetchItem<T>(url: string) {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(response.statusText);
-    }
-    return (await response.json()) as T;
-  }
+  const [topTenStories, setTopTenStories] = useState<IStory[]>([]);
+  // const [topTenStoriesIDs, setTopTenStoriesIDs] = useState<number[]>([]);
 
+  // componentdidmount
   useEffect(() => {
-    fetchItem<IStory>("https://hacker-news.firebaseio.com/v0/item/8863.json")
-      .then((item) => {
-        console.log(item);
-      })
-      .catch((error) => {
-        /* show error message */
-      });
+    getTopTenStoriesRandomized();
+    // fetchItem<IStory>(`${HackerNewsAPI}/item/8863.json`)
+    //   .then((item) => {
+    //     console.log(item);
+    //   })
+    //   .catch((error) => {
+    //     /* show error message */
+    //     console.error(error);
+    //   });
 
-    fetchItem<IStory>("https://hacker-news.firebaseio.com/v0/topstories.json")
-      .then((item) => {
-        console.log(item);
-      })
-      .catch((error) => {
-        /* show error message */
-      });
-
-    fetchItem<IStory>("https://hacker-news.firebaseio.com/v0/user/20.json")
-      .then((item) => {
-        console.log(item);
-      })
-      .catch((error) => {
-        /* show error message */
-      });
-
-    // fetch("https://hacker-news.firebaseio.com/v0/item/8863.json")
-    // .then((response) => response.json())
-    // .then((result) => {
-    //   console.log(result);
-    // });
+    // fetchItem<IStory>(`${HackerNewsAPI}/user/20.json`)
+    //   .then((item) => {
+    //     console.log(item);
+    //   })
+    //   .catch((error) => {
+    //     /* show error message */
+    //     console.error(error);
+    //   });
   }, []);
+
+  const getTopTenStoriesRandomized = () => {
+    let randomizedIDs: number[];
+
+    fetchItem<number[]>(`${HackerNewsAPI}/topstories.json`)
+      .then((topTenStoriesIDsList) => {
+        randomizedIDs = getRandomItemsFromArray(topTenStoriesIDsList, 10);
+      })
+      // .finally(() => console.log("ToptenstoriesIDs", topTenStoriesIDs))
+      .catch((error) => {
+        /* show error message */
+        console.error(error);
+      });
+
+    // setTopTenStories();
+  };
 
   return (
     <View style={styles.container}>
       <Header title={Title} />
       <FlatList
-        data={news}
-        renderItem={(story) => <Text>{story.item.news}</Text>}
+        data={topTenStories}
+        renderItem={(story) => <StoryListItem story={story} />}
       />
     </View>
   );
