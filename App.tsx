@@ -21,7 +21,7 @@ const App: FC = () => {
   const getTopTenStoriesRandomized = async () => {
     setLoading(true);
     // get the ids of 10 random topstories
-    const randomizedIDs: void | number[] = await fetchItem<number[]>(
+    const randomizedIDs = await fetchItem<number[]>(
       `${HackerNewsAPI}/topstories.json`
     )
       .then((topTenStoriesIDsList) => {
@@ -33,13 +33,13 @@ const App: FC = () => {
       });
 
     // check if the randomizedIDs exists and isnt empty
-    if (randomizedIDs !== undefined && randomizedIDs.length > 0) {
+    if (randomizedIDs.length > 0) {
       let topTenStoriesList: IStory[] = [];
 
       // loop through the ids and get their full stories and user info
       for (const storyID of randomizedIDs) {
-        const story: IStory = await getStory(storyID);
-        const user: IUser = await getUser(story.by);
+        const story = await getStory(storyID);
+        const user = await getUser(story.by);
 
         // check if story is defined
         if (story) {
@@ -60,26 +60,22 @@ const App: FC = () => {
 
   // get a story using the story id
   const getStory = async (storyID: number) => {
-    return fetchItem<IStory>(`${HackerNewsAPI}/item/${storyID}.json`)
-      .then((item) => {
-        return item as IStory;
-      })
-      .catch((error) => {
+    return fetchItem<IStory>(`${HackerNewsAPI}/item/${storyID}.json`).catch(
+      (error) => {
         /* show error message */
         return Promise.reject(error);
-      });
+      }
+    );
   };
 
   // get a user using the user id
   const getUser = async (userID: string) => {
-    return fetchItem<IUser>(`${HackerNewsAPI}/user/${userID}.json`)
-      .then((item) => {
-        return item as IUser;
-      })
-      .catch((error) => {
+    return fetchItem<IUser>(`${HackerNewsAPI}/user/${userID}.json`).catch(
+      (error) => {
         /* show error message */
         return Promise.reject(error);
-      });
+      }
+    );
   };
 
   return (
